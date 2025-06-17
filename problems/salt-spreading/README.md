@@ -1,56 +1,16 @@
 <!--
 SPDX-FileCopyrightText: 2024 Marco Chiarandini <marco@imada.sdu.dk>
 
-SPDX-License-Identifier: CC-BY-SA-4.0
+SPDX-License-Identifier: CC-BY-4.0
 -->
-
-<!-- Replace the comment above with your licence information for your problem
-statement. Consider all copyright holders and contributors. -->
-
-<!-- According to the copyright and licensing policy of ROAR-NET original
-problem statements contributed to this repository shall be licensed under the
-CC-BY-4.0 licence. In some cases CC-BY-SA-4.0 might be accepted, e.g., if the
-problem is based upon an existing problem licensed under those terms. Please
-provide a clear justification when opening the pull request if the problem is
-not licensed under CC-BY-4.0 -->
-
-<!-- Remove the section below before submitting 
-
-# Problem template
-
-This folder provides a template for problem statements.
-
-Replace the problem statement below according to the instructions within that
-file (and remove this section).
-
-Place any images and figures in the `images` folder.
-
-Place instance data in the `data` folder. The organisation within that folder is
-merely a suggestion and may be adapted according to the problem needs.
-
-Place any support material (e.g., instance generators, solution evaluators,
-solution visualisers) in the `support` folder.
-
-Template follows below.
-
----
--->
-
-<!-- Remove the section above before submitting -->
 
 # Salt Spreading
 
 Jens Kristian Fonnesbach, Aiban, Denmark, and Marco Chiarandini, University of Southern Denmark, Denmark
 
-<!-- Put two empty spaces at the end of each author line except the last for
-proper formatting -->
-
 Copyright 2025 Marco Chiarandini
 
-This document is licensed under CC-BY-SA-4.0.
-
-<!-- Complete the above accordingly. Copyright and licensing information must be
-consistent with the comment at the beggining of the markdown file -->
+This document is licensed under CC-BY-4.0.
 
 ## Introduction
 
