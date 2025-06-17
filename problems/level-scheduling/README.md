@@ -91,7 +91,7 @@ $c_p$ denotes the space occupied by one part of type $p$. It follows from the
 above restocking strategy that $L_p < G_p$ for all $p \in \lbrace 1,\dots, P\rbrace$.
 
 A feasible solution must not require more storage space than the space, $C_s$,
-available at each station $s$. Formally, $\ell_{\max,s}(u) < C_s$ for all $s
+available at each station $s$. Formally, $\ell_{\max,s}(u) \leq C_s$ for all $s
 \in \lbrace 1,...,S\rbrace$.
 
 ## Instance data file
