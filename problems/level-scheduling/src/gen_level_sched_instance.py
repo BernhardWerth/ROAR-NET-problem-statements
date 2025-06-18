@@ -42,7 +42,7 @@ def instance(T, M, P, a_pm_bar, S, MSC, B):
     # Size of cargo carrier
     G = [random.randrange(2, MSC+1) for _ in range(P)]
     # Space constraint
-    C = [ int(B * sum(G[p] for p in range(P) if A[p] == s)) for s in range(S)]
+    C = [ int(B * sum(G[p] for p in range(P) if A[p] == s)) for s in range(1, S+1)]
     return d, a, A, G, C
 
 if __name__ == '__main__':
