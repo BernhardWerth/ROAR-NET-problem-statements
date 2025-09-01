@@ -133,7 +133,7 @@ specifying, respectively:
 - The station in which each type of part is assembled, $A_1, \dots, A_P$.
 - The storage space used by each type of part, $c_1, \dots, c_P$.
 - The number of parts of each type initially available at the corresponding
-station, $L_1, \dots, L_P$.
+  station, $L_1, \dots, L_P$.
 
 ## Solution file
 
