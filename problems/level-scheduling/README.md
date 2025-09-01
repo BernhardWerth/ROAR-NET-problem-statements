@@ -61,13 +61,14 @@ units of all models $m$, $1 \leq m \leq M$, divided by $T$.
 A solution is a vector $u = (u_1, u_2, \dots, u_T)$ such that $1\leq u_t\leq
 M$ and $\sum_{t=1}^{T} [u_t = m] = d_m$ for all $1\leq m\leq M$, where $u_t$
 denotes the model to be assembled in time slot $t$ and $[u_t = m]$ denotes the
-value $1$ if $u_t = m$ and $0$ otherwise. 
+value $1$ if $u_t = m$ and $0$ otherwise.
 
 The cost of a solution $u$, to be minimised, is the sum of the squared
 deviations between the target demand and the cumulated actual demand for all
 part types and time slots. Mathematically:
 
-$$J(u) = \sum_{t=1}^{T} \sum_{p = 1}^{P} \left(t\cdot r_p - \sum_{i=1}^{t} a_{p,u_i} \right)^2 $$
+$$J(u) = \sum_{t=1}^{T} \sum_{p = 1}^{P} \left(t\cdot r_p - \sum_{i=1}^{t}
+a_{p,u_i} \right)^2 $$
 
 where $a_{p,u_i}$ denotes the number of parts type $p$ required by model $u_i$.
 
@@ -81,18 +82,20 @@ and take the corresponding amount of space until they are used. Mathematically,
 the maximum storage used at station $s$, $1\leq s\leq S$, is given by:
 
 ```math
-\ell_{\max,s}(u) = \max_{t\in\{0,\dots,T\}} \left(\sum_{\substack{p = 1\\A_p=s}}^{P}
-c_p\cdot\left[\left(L_p + t\cdot G_p - \sum_{i=1}^{t} a_{p,u_i} \right) \mod G_p \right]\right)
+\ell_{\max,s}(u) = \max_{t\in\lbrace 0,\dots,T\rbrace} \left(
+\sum_{\substack{p=1\\A_p=s}}^{P} c_p\cdot\left[\left(L_p + t\cdot G_p -
+\sum_{i=1}^{t} a_{p,u_i} \right) \mod G_p \right]\right)
 ```
 
 where $G_p$ denotes the number of parts of type $p$ in a cargo carrier, $L_p$
 denotes the number of parts of type $p$ initially in stock at the station, and
 $c_p$ denotes the space occupied by one part of type $p$. It follows from the
-above restocking strategy that $L_p < G_p$ for all $p \in \lbrace 1,\dots, P\rbrace$.
+above restocking strategy that $L_p < G_p$ for all $p\in\lbrace
+1,\dots,P\rbrace$.
 
 A feasible solution must not require more storage space than the space, $C_s$,
-available at each station $s$. Formally, $\ell_{\max,s}(u) \leq C_s$ for all $s
-\in \lbrace 1,...,S\rbrace$.
+available at each station $s$. Formally, $\ell_{\max,s}(u)\leq C_s$ for all
+$s\in\lbrace 1, \dots, S\rbrace$.
 
 ## Instance data file
 
@@ -101,7 +104,7 @@ $P$, where $M$ is the number of different models to be assembled, and $P$ is
 the number of different types of parts to be used.
 
 The second line contains $M$ space-separated integers, $d_1, d_2, \dots, d_M$,
-corresponding to the number of units of each model to assemble. 
+corresponding to the number of units of each model to assemble.
 
 The following $P$ lines give a space-separated matrix of the number of parts
 of each type that are used in each model:
@@ -129,7 +132,8 @@ specifying, respectively:
 - The capacity of cargo carriers for each type of part, $G_1, \dots, G_P$.
 - The station in which each type of part is assembled, $A_1, \dots, A_P$.
 - The storage space used by each type of part, $c_1, \dots, c_P$.
-- The number of parts of each type initially available at the corresponding station, $L_1, \dots, L_P$.
+- The number of parts of each type initially available at the corresponding
+station, $L_1, \dots, L_P$.
 
 ## Solution file
 
@@ -175,11 +179,11 @@ $J(u) = 9.6000,\ \ell_{\max, 1}(u) = 4,\ \ell_{\max, 2}(u) = 3$
 
 ### Explanation
 
-There are $M=4$ models and $P=5$ types of parts. Two units of each model 1, 2, and 3,
-and four units of model 4 are to be assembled. Model 1 requires one part of
-each type 1, 3 and 5, and two parts of type 4. Model 2 requires one part of
-each type 1, 4 and 5. Models 3 and 4 require a single part of type 5 and 2,
-respectively.
+There are $M=4$ models and $P=5$ types of parts. Two units of each model 1, 2,
+and 3, and four units of model 4 are to be assembled. Model 1 requires one
+part of each type 1, 3 and 5, and two parts of type 4. Model 2 requires one
+part of each type 1, 4 and 5. Models 3 and 4 require a single part of type 5
+and 2, respectively.
 
 There are two stations in the assembly line, each with 4 units of storage
 capacity. The number of parts in each cargo carrier is two for part types 1,
@@ -189,13 +193,15 @@ All parts require one unit of storage space, and no parts are assumed to be
 available at the stations before assembly starts.
 
 The solution indicates the order in which the two units of each
-model 1, 2, and 3, and the four units of model 4 are to be assembled. 
+model 1, 2, and 3, and the four units of model 4 are to be assembled.
 
 ## Acknowledgement
 
 This problem statement is based upon work from COST Action Randomised
-Optimisation Algorithms Research Network (ROAR-NET), CA22137, is supported by
-COST (European Cooperation in Science and Technology).
+Optimisation Algorithms Research Network (ROAR-NET), CA22137, supported by
+COST (European Cooperation in Science and Technology). This work is financed
+through national funds by FCT - Fundação para a Ciência e a Tecnologia, I.P.,
+in the framework of the Project UIDB/00326/2025 and UIDP/00326/2025.
 
 ## References
 
@@ -204,9 +210,9 @@ algorithms for solving the Monden problem," *European Journal of Operational
 Research*, 88(1), 101-113.
 \[ [DOI](https://doi.org/10.1016/0377-2217(94)00165-0) \]
 
-N. Boysen, M. Fliedner, and Armin Schol (2009). "Level scheduling of mixed-model
-assembly lines under storage constraints," *International Journal of
-Production Research*, 47(10), 2669-2684.
+N. Boysen, M. Fliedner, and Armin Schol (2009). "Level scheduling of
+mixed-model assembly lines under storage constraints," *International Journal
+of Production Research*, 47(10), 2669-2684.
 \[ [DOI](https://doi.org/10.1080/00207540701725067) \]
 
 
