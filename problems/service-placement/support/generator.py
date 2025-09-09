@@ -5,9 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 """
 
 
+import random
+
 import matplotlib.pyplot as plt
 import networkx as nx
-import random
 
 
 def visualise_graph(G):
@@ -20,7 +21,7 @@ def visualise_graph(G):
 def generate_problem(filename, edge_probability=1):
     G = nx.Graph()
     connected = False
-
+    num_nodes = 0
     while not connected:
         num_nodes = random.randint(5, 100)
         
@@ -98,7 +99,7 @@ def generate_base_problem():
 
 
 def generate_solution_base_problem():
-    with open("../data/solution_base.txt", 'w') as file:
+    with open("../data/solution_base.txt", 'w', encoding='utf-8') as file:
         file.write("0,1,4,5\n")
         file.write("0\n")
         file.write("0,1,3,5\n")
@@ -107,7 +108,7 @@ def generate_solution_base_problem():
 
 
 def write_to_file(G, requests, filename):
-    with open(filename + ".txt", 'w') as file:
+    with open(filename + ".txt", 'w', encoding='utf-8') as file:
         file.write(str(G.number_of_nodes()) + "\n")
         for i in list(G.nodes):
             string = str(i) + "," + str(G.nodes[i]['cpu']) + "," + str(G.nodes[i]['ram']) + "," + str(G.nodes[i]['processing']) + "\n"
@@ -119,11 +120,11 @@ def write_to_file(G, requests, filename):
             file.write(string)
 
         file.write(str(len(requests)) + "\n")
-        for i in range(len(requests)):
+        for i,_ in enumerate(requests):
             file.write(str(requests[i]['source']) + "," + str(requests[i]['destination']) + "," + str(requests[i]['bandwidth']) + "\n")
             file.write(str(len(requests[i]['services'])) + "\n")
             
-            for j in range(len(requests[i]['services'])):
+            for j,_ in enumerate(requests[i]['services']):
                 file.write(str(requests[i]['services'][j]['cpu']) + "," + str(requests[i]['services'][j]['ram']) + "\n")
 
 

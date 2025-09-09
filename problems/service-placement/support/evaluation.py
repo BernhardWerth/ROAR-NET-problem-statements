@@ -13,7 +13,7 @@ def read_problem(filename):
     G = nx.Graph()
     requests = []
 
-    with open(filename + ".txt", 'r') as f:
+    with open(filename + ".txt", 'r', encoding='utf-8') as f:
         num_nodes = int(f.readline().strip())
 
         for _ in range(num_nodes):
@@ -60,11 +60,11 @@ def read_solution(filename, requests):
     solution = []
 
     with open(filename + ".txt", 'r') as f:
-        for i in range(len(requests)):
+        for i,_ in enumerate(requests):
             path = list(map(int, f.readline().strip().split(",")))
             nodes = []
 
-            for j in range(len(requests[i]['services'])):
+            for _ in range(len(requests[i]['services'])):
                 node = int(f.readline().strip())
                 nodes.append(node)
             
@@ -89,7 +89,7 @@ def calc_value(G, requests, solution, edge_metric, node_metric):
     if len(requests) != len(solution) or len(solution) == 0:
         return math.inf
 
-    for i in range(len(requests)):
+    for i,_ in enumerate(requests):
         path = solution[i]['path']
         nodes = solution[i]['nodes']
 
@@ -128,4 +128,5 @@ def calc_value(G, requests, solution, edge_metric, node_metric):
 
 
 if __name__ == '__main__':
-    print(evaluate_solution("../data/base", "../data/solution_base"))
+    dir = r'D:\Projekte\ROAR-NET\problem-statements\problems\service-placement\data'
+    print(evaluate_solution(dir+"/base", dir+"/solution_base"))
