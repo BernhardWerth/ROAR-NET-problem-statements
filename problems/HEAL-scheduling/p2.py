@@ -14,7 +14,7 @@ class StackingState:
     Represents the current state of the stacks in the warehouse.
     """
 
-    def __init__(self, stacks, time =0):
+    def __init__(self, stacks, problem, time =0):
         """
         Initializes the StackingState with given stacks, maximum height, warehouse height, and handover time.
         """
@@ -22,10 +22,15 @@ class StackingState:
         self.handover_ready_time = time  # Time until the handover stack is ready
         self.current_time = time
         self.overdue_sqr = 0
+        self.problem = problem
         self.block_lookup = {block:(stack_index, height) for stack_index, stack in enumerate(stacks) for height, block in enumerate(stack) }  # quick lookup for blocks in stacks
+        self.move_durations = {b: self.calc_remove_dur(b) for s in stacks for b in s}
+        
 
-
-    def apply_relocation(self, from_stack, to_stack, problem):
+    def calc_remove_dur(self, b):
+        return self.get_relocation_duration(self.block_lookup[b][0], self.problem.handover_stack,self.block_lookup[b][1], 0)
+    
+    def apply_relocation(self, from_stack, to_stack):
         """
         Moves a block from one stack to another.
 
@@ -36,31 +41,33 @@ class StackingState:
         if not self.stacks[from_stack] or len(self.stacks[from_stack]) == 0:
             raise ValueError(f"Cannot move block: stack {from_stack} is empty.")
        
-        if to_stack is not problem.handover_stack:
+        if to_stack is not self.problem.handover_stack:
             # Index bounds check
             if(from_stack<0 or to_stack<0 or from_stack>= len(self.stacks) or to_stack>= len(self.stacks)):
                 raise ValueError(f"Stack index out of bounds: from_stack {from_stack}, to_stack {to_stack}.")
             # Overflow check: to_stack must not exceed its maximum height
-            if len(self.stacks[to_stack]) + 1 > problem.max_height[to_stack]:
+            if len(self.stacks[to_stack]) + 1 > self.problem.max_height[to_stack]:
                 raise ValueError(f"Cannot move block: stack {to_stack} will exceed max height.")
 
         # Update current time based on the move
-        self.current_time = self.determine_time(from_stack, to_stack, problem)
+        self.current_time = self.determine_time(from_stack, to_stack)
 
         block = self.stacks[from_stack].pop()
-        if to_stack is not problem.handover_stack:
+        if to_stack is not self.problem.handover_stack:
             self.stacks[to_stack].append(block)
             self.block_lookup[block] = (to_stack, len(self.stacks[to_stack])-1)
+            self.move_durations[block] = self.calc_remove_dur(block)
         else:
-            self.handover_ready_time = self.current_time + problem.handover_time
-            ot = self.current_time - problem.due_dates[block]
-            self.overdue_sqr += square_if_positive(ot)
+            self.handover_ready_time = self.current_time + self.problem.handover_time
+            ot = self.current_time - self.problem.due_dates[block]
+            self.overdue_sqr += weigh_if_positive(ot)
             self.block_lookup.pop(block)
+            self.move_durations.pop(block)
 
-    def determine_time(self, from_stack, to_stack, problem):
-        dur = self.__move_time(from_stack, to_stack, problem)
+    def determine_time(self, from_stack, to_stack):
+        dur = self.__move_time(from_stack, to_stack)
         delta = 0
-        if to_stack is problem.handover_stack:
+        if to_stack is self.problem.handover_stack:
             delta = self.handover_ready_time - dur - self.current_time
             if delta < 0:
                 delta =0
@@ -74,7 +81,7 @@ class StackingState:
         """
         return all(len(stack) == 0 for stack in self.stacks)
 
-    def __move_time(self, from_stack, to_stack, problem):
+    def __move_time(self, from_stack, to_stack):
         
         """
         Calculates the time required to move a block from one stack to another.
@@ -84,16 +91,16 @@ class StackingState:
         :return: The time taken to move the block.
         """
 
-        horizontal_distance = abs(from_stack - to_stack)
-        from_height = len(self.stacks[from_stack])  # Current height of the from_stack
+        from_height = len(self.stacks[from_stack])-1  # Current height of the from_stack
         to_height = len(self.stacks[to_stack])      # Current height of the to_stack
 
         # Vertical distance: move from current height to max_height, then down to the target height
-        return self.get_relocation_duration(problem, horizontal_distance, from_height, to_height)
+        return self.get_relocation_duration(from_stack, to_stack, from_height, to_height)
 
-    def get_relocation_duration(self, problem, horizontal_distance, from_height, to_height):
-        vertical_distance = (problem.crane_height - from_height) + (problem.crane_height - to_height - 1)
-        return (horizontal_distance / problem.horizontal_speed) + (vertical_distance / problem.vertical_speed)
+    def get_relocation_duration(self, from_pos, to_pos, from_height, to_height):
+        horizontal_distance = abs(from_pos - to_pos)
+        vertical_distance = (self.problem.crane_height - from_height) + (self.problem.crane_height - to_height)
+        return (horizontal_distance / self.problem.horizontal_speed) + (vertical_distance / self.problem.vertical_speed)
     
     def __copy__(self):
         """
@@ -101,17 +108,17 @@ class StackingState:
 
         :return: A new instance of StackingState with the same attributes.
         """
-        new_state = StackingState([stack.copy() for stack in self.stacks], self.current_time)
+        new_state = StackingState([stack.copy() for stack in self.stacks],self.problem, self.current_time)
         new_state.handover_ready_time = self.handover_ready_time
         new_state.overdue_sqr = self.overdue_sqr
         return new_state
     
     def __repr__(self):
-        return f"StackingState(time={self.current_time}, handover_ready={self.handover_ready_time}, stacks={self.stacks}, overdue_sqr={math.sqrt(self.overdue_sqr)})"
+        return f"StackingState(time={self.current_time}, handover_ready={self.handover_ready_time}, stacks={self.stacks}, overdue={self.overdue_sqr})"
 
 
-def square_if_positive(x):
-    return x*x if x>0 else 0
+def weigh_if_positive(x):
+    return x if x>0 else 0
 
 #SupportsCopySolution, SupportsObjectiveValue, SupportsLowerBound 
 class Solution:
@@ -145,20 +152,22 @@ class Solution:
         #lingering = sum(sum(square_if_positive(self.state.current_time-self.problem.due_dates[b]) for b in s) for s in self.state.stacks)
         time = self.state.current_time
         forward = 0
-        for block, due in self.problem.sort_due_dates:
+        minmove = min(self.state.move_durations.values()) if len(self.state.move_durations)>0 else 0
+        for block,due in sorted(enumerate(self.problem.due_dates), key=lambda x: x[1]):
             if block not in self.state.block_lookup:
                 continue
             stack_index, height = self.state.block_lookup[block]
-            relocation_duration = self.state.get_relocation_duration(self.problem, abs(stack_index - self.problem.handover_stack), height, 0)
+            #relocation_duration = self.state.get_relocation_duration(stack_index , self.problem.handover_stack, height, 0)
+            relocation_duration= minmove
             if relocation_duration< self.problem.handover_time:
                 relocation_duration = self.problem.handover_time
             time += relocation_duration
-            if time > due:
-                forward += square_if_positive(time - due)
+            if time > self.problem.due_dates[block]:
+                forward += weigh_if_positive(time - self.problem.due_dates[block])
         
-        return math.sqrt(self.state.overdue_sqr + forward) # at least one move per block remaining
+        return self.state.overdue_sqr + forward # at least one move per block remaining
     def __repr__(self):
-        return f"Solution(feasible={self.is_feasible()}, objval={self.objective_value()}, lb={self.lower_bound()}, moves={len(self.relocations)})"    
+        return f"Solution(feasible={self.is_feasible()}, objval={self.objective_value()}, lb={self.lower_bound()}, moves={len(self.relocations)},state={self.state})"    
     def copy_solution(self):
         return Solution(self.state.__copy__(), self.problem, self.relocations.copy())
 
@@ -203,11 +212,10 @@ class StackingProblem:
         self.handover_stack = handover_stack
         self.initial_stacks = initial_stacks
         self.c_neighbourhood = AddRelocationNeighbourhood(self)
-        self.sort_due_dates = sorted(enumerate(due_dates), key=lambda x: x[1])
         
     def empty_solution(self) -> Solution:
         """Create initial solution with blocks in their starting positions."""
-        return Solution(StackingState([s.copy() for s in self.initial_stacks], 0), self)
+        return Solution(StackingState([s.copy() for s in self.initial_stacks],self, 0), self)
     
     def construction_neighbourhood(self):
         return self.c_neighbourhood
@@ -258,7 +266,7 @@ class AddRelocationMove:
         self.to_stack = to_stack   
     
     def apply_move(self, solution: Solution) -> Solution:
-        solution.state.apply_relocation(self.from_stack, self.to_stack, self.neihghbourhood.problem)
+        solution.state.apply_relocation(self.from_stack, self.to_stack)
         solution.relocations.append((self.from_stack, self.to_stack))
         return solution
     
@@ -273,52 +281,13 @@ class AddRelocationMove:
         new_curr = state.determine_time(self.from_stack, self.to_stack, problem)
         block = state.stacks[self.from_stack][-1]  # The block being moved
         ot = new_curr - problem.due_dates[block]
-        return math.sqrt(state.overdue_sqr+square_if_positive(ot))-math.sqrt(state.overdue_sqr)
+        return weigh_if_positive(ot)
 
     def lower_bound_increment(self, solution: Solution) -> float:
         state = solution.state
         problem = self.neihghbourhood.problem
-        new_curr = state.determine_time(self.from_stack, self.to_stack, problem)
-        curr_block = state.stacks[self.from_stack][-1]  # The block being moved
-        #lingering_old = sum(sum(square_if_positive(state.current_time-problem.due_dates[b]) for b in s) for s in state.stacks)
-        #lingering_new = sum(sum(square_if_positive(new_curr-problem.due_dates[b]) for b in s) for s in state.stacks)
-        
-        time = state.current_time
-        forward = 0
-        for block, due in problem.sort_due_dates:
-            if block not in state.block_lookup:
-                continue
-            stack_index, height = state.block_lookup[block]
-            relocation_duration = state.get_relocation_duration(problem, abs(stack_index - problem.handover_stack), height, 0)
-            if relocation_duration< problem.handover_time:
-                relocation_duration = problem.handover_time
-            time += relocation_duration
-            if time > due:
-                forward += square_if_positive(time - due)
-
-
-        time = new_curr
-        forward2 = 0
-        for block, due in problem.sort_due_dates:
-            if block not in state.block_lookup:
-                continue
-            if block != curr_block:
-                stack_index, height = state.block_lookup[block]
-            elif self.to_stack is problem.handover_stack:
-                forward2 += square_if_positive(new_curr - due)
-                continue
-            else:
-                stack_index = self.to_stack
-                height = len(state.stacks[self.to_stack])
-
-            relocation_duration = state.get_relocation_duration(problem, abs(stack_index - problem.handover_stack), height, 0)
-            if relocation_duration< problem.handover_time:
-                relocation_duration = problem.handover_time
-            time += relocation_duration
-            if time > due:
-                forward2 += square_if_positive(time - due)
-        
-        return math.sqrt(state.overdue_sqr+forward2)-math.sqrt(state.overdue_sqr+forward)
+        if self.to_stack!= problem.handover_stack:
+        return forward2-forward
 
 
 
@@ -352,7 +321,20 @@ if __name__ == "__main__":
         hspeed=1,
         handover_time=0
     )
+
+
+    problem = StackingProblem([3,3,3],[0.0,0.0,0.0],0,1,1,3,0,[[],[0],[1,2]])
+
     solution = problem.empty_solution()
+    # print(solution)
+    # AddRelocationMove(AddRelocationNeighbourhood(problem), 1, 0).apply_move(solution)
+    # print(solution)
+    # AddRelocationMove(AddRelocationNeighbourhood(problem), 2, 0).apply_move(solution)
+    # print(solution)
+    # AddRelocationMove(AddRelocationNeighbourhood(problem), 2, 0).apply_move(solution)
+    # print(solution)
+
+
     print(solution)
     for move in problem.construction_neighbourhood().moves(solution):
         print(f"Move from {move.from_stack} to {move.to_stack}, obj increment: {move.objective_value_increment(solution)}, lb increment: {move.lower_bound_increment(solution)}")
