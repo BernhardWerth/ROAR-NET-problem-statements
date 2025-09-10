@@ -29,6 +29,14 @@ class StackingState:
         if not self.stacks[from_stack] or len(self.stacks[from_stack]) == 0:
             raise ValueError(f"Cannot move block: stack {from_stack} is empty.")
        
+        if to_stack is not problem.handover_stack:
+            # Index bounds check
+            if(from_stack<0 or to_stack<0 or from_stack>= len(self.stacks) or to_stack>= len(self.stacks)):
+                raise ValueError(f"Stack index out of bounds: from_stack {from_stack}, to_stack {to_stack}.")
+            # Overflow check: to_stack must not exceed its maximum height
+            if len(self.stacks[to_stack]) + 1 > problem.max_height[to_stack]:
+                raise ValueError(f"Cannot move block: stack {to_stack} will exceed max height.")
+
         dur = self.__move_time(from_stack, to_stack, problem)
 
         # If moving to handover stack, ensure handover is ready
@@ -36,14 +44,9 @@ class StackingState:
             delta = self.handover_ready_time- dur-self.current_time
             if delta > 0:
                 self.current_time += delta
-            
-        # Overflow check: to_stack must not exceed max height
-        elif len(self.stacks[to_stack]) + 1 > problem.max_height[to_stack]:
-            raise ValueError(f"Cannot move block: stack {to_stack} will exceed max height.")
-       
         self.current_time = self.current_time + dur
-        block = self.stacks[from_stack].pop()
 
+        block = self.stacks[from_stack].pop()
         if to_stack is not problem.handover_stack:
             self.stacks[to_stack].append(block)
         else:
@@ -77,6 +80,22 @@ class StackingState:
         vertical_distance = (problem.crane_height - from_height) + (problem.crane_height - to_height - 1)
         return (horizontal_distance / problem.horizontal_speed) + (vertical_distance / problem.vertical_speed)
     
+    def __copy__(self):
+        """
+        Creates a deep copy of the current StackingState.
+
+        :return: A new instance of StackingState with the same attributes.
+        """
+        new_state = StackingState([stack.copy() for stack in self.stacks], self.current_time)
+        new_state.handover_ready_time = self.handover_ready_time
+        new_state.overdue_sqr = self.overdue_sqr
+        return new_state
+    
+    def __repr__(self):
+        return f"StackingState(time={self.current_time}, handover_ready={self.handover_ready_time}, stacks={self.stacks}, overdue_sqr={math.sqrt(self.overdue_sqr)})"
+    
+
+#SupportsEmptySolution   
 class StackingProblem:
     """
     Represents a stacking problem instance.
@@ -113,4 +132,5 @@ class StackingProblem:
         if len(max_height)!= len(due_dates): 
             raise ValueError("max_height and due_dates must have the same length.")
         
+
         
