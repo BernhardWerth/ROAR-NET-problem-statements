@@ -1,6 +1,12 @@
+from __future__ import annotations
+
 import math
 import random
 from typing import List
+import numpy as np
+import roar_net_api.algorithms as alg
+import time
+
 
 class StackingState:
 
@@ -18,7 +24,7 @@ class StackingState:
         self.overdue_sqr = 0
 
 
-    def move_block(self, from_stack, to_stack, problem):
+    def apply_relocation(self, from_stack, to_stack, problem):
         """
         Moves a block from one stack to another.
 
@@ -37,14 +43,8 @@ class StackingState:
             if len(self.stacks[to_stack]) + 1 > problem.max_height[to_stack]:
                 raise ValueError(f"Cannot move block: stack {to_stack} will exceed max height.")
 
-        dur = self.__move_time(from_stack, to_stack, problem)
-
-        # If moving to handover stack, ensure handover is ready
-        if to_stack is problem.handover_stack:
-            delta = self.handover_ready_time- dur-self.current_time
-            if delta > 0:
-                self.current_time += delta
-        self.current_time = self.current_time + dur
+        # Update current time based on the move
+        self.current_time = self.determine_time(from_stack, to_stack, problem)
 
         block = self.stacks[from_stack].pop()
         if to_stack is not problem.handover_stack:
@@ -52,7 +52,16 @@ class StackingState:
         else:
             self.handover_ready_time = self.current_time + problem.handover_time
             ot = self.current_time - problem.due_dates[block]
-            self.overdue_sqr += ot*ot if ot > 0 else 0
+            self.overdue_sqr += square_if_positive(ot)
+
+    def determine_time(self, from_stack, to_stack, problem):
+        dur = self.__move_time(from_stack, to_stack, problem)
+        delta = 0
+        if to_stack is problem.handover_stack:
+            delta = self.handover_ready_time - dur - self.current_time
+            if delta < 0:
+                delta =0
+        return self.current_time + dur + delta
 
     def is_empty(self):
         """
@@ -93,9 +102,52 @@ class StackingState:
     
     def __repr__(self):
         return f"StackingState(time={self.current_time}, handover_ready={self.handover_ready_time}, stacks={self.stacks}, overdue_sqr={math.sqrt(self.overdue_sqr)})"
-    
 
-#SupportsEmptySolution   
+
+def square_if_positive(x):
+    return x*x if x>0 else 0
+
+#SupportsCopySolution, SupportsObjectiveValue, SupportsLowerBound 
+class Solution:
+    """
+    Represents a solution to the stacking scheduling problem.
+    Attributes:
+        state (StackingState): The current state of the stacking problem.
+        problem: The problem instance containing relevant parameters and data.
+        relocations (List[tuple], optional): A list of relocations performed to reach the current state.
+    Methods:
+        is_feasible():
+            Checks if the current solution is feasible, i.e., if the state is empty.
+        objective_value():
+            Returns the objective value of the solution if feasible, calculated as the square root of the state's overdue squared value.
+            Returns None if the solution is not feasible.
+        lower_bound():
+            Computes a lower bound on the objective value, considering both the current overdue squared value and lingering overdue for remaining blocks.
+    """
+    def __init__(self, state: StackingState, problem, relocations: List[tuple]=None):
+        self.state = state
+        self.problem = problem
+        self.relocations = relocations if relocations else []
+
+    def is_feasible(self):
+        return self.state.is_empty()
+    def objective_value(self):
+        if not self.is_feasible():
+            return None
+        return math.sqrt(self.state.overdue_sqr)
+    def lower_bound(self):
+        lingering = sum(sum(square_if_positive(self.state.current_time-self.problem.due_dates[b]) for b in s) for s in self.state.stacks)
+        return math.sqrt(self.state.overdue_sqr + lingering) # at least one move per block remaining
+    def __repr__(self):
+        return f"Solution(feasible={self.is_feasible()}, objval={self.objective_value()}, lb={self.lower_bound()}, moves={len(self.relocations)})"    
+    def copy_solution(self):
+        return Solution(self.state.__copy__(), self.problem, self.relocations.copy())
+
+
+# SupportsConstructionNeighbourhood[DeliverBlockNeighbourhood],
+#    SupportsLocalNeighbourhood[CombinedNeighbourhood],
+#    SupportsEmptySolution[Solution],
+#    SupportsRandomSolution[Solution], 
 class StackingProblem:
     """
     Represents a stacking problem instance.
@@ -121,6 +173,7 @@ class StackingProblem:
         vertical_speed: float,
         crane_height: int,
         handover_stack: int,
+        initial_stacks: List[List[int]],  
     ):
         self.max_height = max_height
         self.due_dates = due_dates
@@ -129,8 +182,137 @@ class StackingProblem:
         self.vertical_speed = vertical_speed
         self.crane_height = crane_height
         self.handover_stack = handover_stack
-        if len(max_height)!= len(due_dates): 
-            raise ValueError("max_height and due_dates must have the same length.")
+        self.initial_stacks = initial_stacks
+        self.c_neighbourhood = AddRelocationNeighbourhood(self)
         
+    def empty_solution(self) -> Solution:
+        """Create initial solution with blocks in their starting positions."""
+        return Solution(StackingState([s.copy() for s in self.initial_stacks], 0), self)
+    
+    def construction_neighbourhood(self):
+        return self.c_neighbourhood
 
+    @staticmethod
+    def generate_initial_stacks(max_height, num_blocks, num_stacks, handover_stack, vspeed, hspeed, handover_time):
+        """
+        Generates an initial configuration of stacks for a stacking problem.
+        Parameters:
+            max_height (int or list of int): Maximum height for each stack.
+            num_blocks (int): Total number of blocks to distribute among stacks.
+            num_stacks (int): Number of stacks to create.
+            handover_stack (int): Index of the stack designated as the handover stack (excluded from initial block placement).
+            vspeed (int): Vertical speed parameter for due date calculation.
+            hspeed (int): Horizontal speed parameter for due date calculation.
+            handover_time (int): Time required for handover operations.
+        Returns:
+            StackingProblem: An instance of the StackingProblem class initialized with the generated stacks, due dates, and parameters.
+        Raises:
+            ValueError: If the total stack capacity is insufficient for the number of blocks.
+        """
+        stacks = [[] for _ in range(num_stacks)]
+        if max_height*num_stacks < num_blocks:
+            raise ValueError("Not enough total stack capacity for the number of blocks.")
+        due_dates = np.zeros(num_blocks, dtype=int)
+        for block_id in range(num_blocks):
+            stack_id = random.choice([i for i in range(num_stacks) if i != handover_stack and len(stacks[i]) < max_height])
+            stacks[stack_id].append(block_id)
+            due_dates[block_id] = random.uniform(1,(vspeed*num_blocks + hspeed*max_height)*num_blocks)
         
+        return StackingProblem(
+            max_height=[max_height]*num_stacks,
+            due_dates=list(due_dates),
+            handover_time=handover_time,
+            horizontal_speed=hspeed,
+            vertical_speed=vspeed,
+            crane_height=max_height+1,
+            handover_stack=handover_stack,
+            initial_stacks=stacks
+        )
+
+#(SupportsApplyMove[Solution], SupportsLowerBoundIncrement[Solution], SupportsObjectiveValueIncrement[Solution])   
+class AddRelocationMove:
+
+    def __init__(self, neihghbourhood: AddRelocationNeighbourhood, from_stack: int, to_stack: int):
+        self.neihghbourhood = neihghbourhood
+        self.from_stack = from_stack   
+        self.to_stack = to_stack   
+    
+    def apply_move(self, solution: Solution) -> Solution:
+        solution.state.apply_relocation(self.from_stack, self.to_stack, self.neihghbourhood.problem)
+        solution.relocations.append((self.from_stack, self.to_stack))
+        return solution
+    
+    
+    def objective_value_increment(self, solution: Solution) -> float:
+        if self.to_stack!= self.neihghbourhood.problem.handover_stack:
+            # Moving to a normal stack does not change the objective value
+            return 0.0
+        state = solution.state
+        problem = self.neihghbourhood.problem
+        new_curr = state.determine_time(self.from_stack, self.to_stack, problem)
+        block = state.stacks[self.from_stack][-1]  # The block being moved
+        ot = new_curr - problem.due_dates[block]
+        return math.sqrt(state.overdue_sqr+square_if_positive(ot))-math.sqrt(state.overdue_sqr)
+
+    def lower_bound_increment(self, solution: Solution) -> float:
+        state = solution.state
+        problem = self.neihghbourhood.problem
+        new_curr = state.determine_time(self.from_stack, self.to_stack, problem)
+
+        lingering_old = sum(sum(square_if_positive(state.current_time-problem.due_dates[b]) for b in s) for s in state.stacks)
+        lingering_new = sum(sum(square_if_positive(new_curr-problem.due_dates[b]) for b in s) for s in state.stacks)
+
+        return math.sqrt(state.overdue_sqr+lingering_new)-math.sqrt(state.overdue_sqr+lingering_old)
+
+
+
+#SupportsMoves[Solution, AddRelocationMove]
+class AddRelocationNeighbourhood:
+    def __init__(self, problem):
+        self.problem = problem
+
+    def moves(self, solution: Solution):
+        print(f"Generating moves... for{solution}")
+        for from_stack in range(len(solution.state.stacks)):
+            if len(solution.state.stacks[from_stack])==0:
+                continue
+            if from_stack is self.problem.handover_stack:
+                continue
+            for to_stack in range(len(solution.state.stacks)):
+                if from_stack==to_stack:
+                    continue
+                if to_stack is not self.problem.handover_stack and len(solution.state.stacks[to_stack]) >= self.problem.max_height[to_stack]:
+                    continue
+                yield AddRelocationMove(self, from_stack, to_stack)
+
+if __name__ == "__main__":
+    # Example usage
+    problem = StackingProblem.generate_initial_stacks(
+        max_height=3,
+        num_blocks=10,
+        num_stacks=5,
+        handover_stack=0,
+        vspeed=0.1,
+        hspeed=0.1,
+        handover_time=2
+    )
+    solution = problem.empty_solution()
+    print(solution)
+    for move in problem.construction_neighbourhood().moves(solution):
+        print(f"Move from {move.from_stack} to {move.to_stack}, obj increment: {move.objective_value_increment(solution)}, lb increment: {move.lower_bound_increment(solution)}")
+
+
+    # Generate a random problem instance (matching your parameters)
+    results = {}
+    
+    # Construction Algorithms
+    print("Running construction algorithms...")
+    
+    # Greedy Construction
+    start_time = time.time()
+    solution_greedy = alg.greedy_construction(problem)
+    results['Greedy Construction'] = {
+        'objective': solution_greedy.objective_value(),
+        'time': time.time() - start_time,
+        'feasible': solution_greedy.is_feasible
+    }
