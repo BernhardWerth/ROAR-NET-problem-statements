@@ -114,6 +114,7 @@ class StackingState:
         new_state = StackingState([stack.copy() for stack in self.stacks],self.problem, self.current_time)
         new_state.handover_ready_time = self.handover_ready_time
         new_state.overdue_sqr = self.overdue_sqr
+        new_state.sorted_dues = SortedSet(self.sorted_dues,  key=lambda x: x[1])
         return new_state
     
     def __repr__(self):
