@@ -600,7 +600,7 @@ class StackingProblem(
         return json.dumps(obj, indent=2)
 
     @classmethod
-    def from_json(cls, json_str: str) -> "StackingProblem":
+    def from_json(cls, json_str: str, name:str = "") -> "StackingProblem":
         """Deserialize a problem instance from a JSON string."""
         obj = json.loads(json_str)
         return cls(
@@ -612,6 +612,7 @@ class StackingProblem(
             crane_height=obj["crane_height"],
             handover_stack=obj["handover_stack"],
             initial_stacks=obj["initial_stacks"],
+            name = name
         )
 
     @classmethod
