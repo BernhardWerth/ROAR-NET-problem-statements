@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import math
+import json
 import random
+import time
 from typing import List
 import numpy as np
 import roar_net_api.algorithms as alg
-import time
 from sortedcontainers import SortedSet
+
 
 class StackingState:
 
@@ -120,7 +121,7 @@ class StackingState:
 
 
 def weigh_if_positive(x):
-    return x if x > 0 else 0
+    return x if x > 0 else 0.00001*x
 
 #SupportsCopySolution, SupportsObjectiveValue, SupportsLowerBound 
 class Solution:
@@ -167,11 +168,14 @@ class Solution:
         return self.lower_bound_cache
     def __repr__(self):
         return f"Solution(feasible={self.is_feasible()}, objval={self.objective_value()}, lb={self.lower_bound()}, moves={len(self.relocations)},state={self.state})"    
+    
     def copy_solution(self):
         copy_solution = Solution(self.state.copy(), self.problem, self.relocations.copy())
         copy_solution.lower_bound_cache = self.lower_bound_cache
         return copy_solution
-
+    
+    def __str__(self):
+        return f"Solution(feasible={self.is_feasible()}, objval={self.objective_value()}, lb={self.lower_bound()}, moves={len(self.relocations)},state={self.state})"
 
 # SupportsConstructionNeighbourhood[DeliverBlockNeighbourhood],
 #    SupportsLocalNeighbourhood[CombinedNeighbourhood],
@@ -257,6 +261,52 @@ class StackingProblem:
             handover_stack=handover_stack,
             initial_stacks=stacks
         )
+    
+    def __repr__(self):
+        return (
+            f"StackingProblem(num_stacks={len(self.max_height)}, "
+            f"max_height={self.max_height}, "
+            f"num_blocks={len(self.due_dates)}, "
+            f"handover_stack={self.handover_stack}, "
+            f"horizontal_speed={self.horizontal_speed}, "
+            f"vertical_speed={self.vertical_speed}, "
+            f"handover_time={self.handover_time})"
+        )
+
+    def to_json(self) -> str:
+        """Serialize the problem instance to a JSON string."""
+        obj = {
+            "max_height": self.max_height,
+            "due_dates": self.due_dates,
+            "handover_time": self.handover_time,
+            "horizontal_speed": self.horizontal_speed,
+            "vertical_speed": self.vertical_speed,
+            "crane_height": self.crane_height,
+            "handover_stack": self.handover_stack,
+            "initial_stacks": self.initial_stacks,
+        }
+        return json.dumps(obj, indent=2)
+
+    @classmethod
+    def from_json(cls, json_str: str) -> "StackingProblem":
+        """Deserialize a problem instance from a JSON string."""
+        obj = json.loads(json_str)
+        return cls(
+            max_height=obj["max_height"],
+            due_dates=obj["due_dates"],
+            handover_time=obj["handover_time"],
+            horizontal_speed=obj["horizontal_speed"],
+            vertical_speed=obj["vertical_speed"],
+            crane_height=obj["crane_height"],
+            handover_stack=obj["handover_stack"],
+            initial_stacks=obj["initial_stacks"],
+        )
+    
+    @classmethod
+    def from_textio(cls, f:str):
+        with open(f, "r", encoding="utf-8") as file:
+            data_str = file.read()  
+        return cls.from_json(data_str)
 
 #(SupportsApplyMove[Solution], SupportsLowerBoundIncrement[Solution], SupportsObjectiveValueIncrement[Solution])   
 class AddRelocationMove:
@@ -281,8 +331,9 @@ class AddRelocationMove:
         nextstate = solution.copy_solution()
         self.apply_move(nextstate)
         return nextstate.lower_bound()-solution.lower_bound()
-
-
+    
+    def __repr__(self):
+        return f"AddRelocationMove(from_stack={self.from_stack}, to_stack={self.to_stack})"
 
 #SupportsMoves[Solution, AddRelocationMove]
 class AddRelocationNeighbourhood:

@@ -1,0 +1,513 @@
+{
+  "Now": {
+    "MilliSeconds": 0
+  },
+  "Production": {
+    "Id": 0,
+    "MaxHeight": 4,
+    "BottomToTop": [
+      {
+        "Id": 37,
+        "Release": {
+          "MilliSeconds": 0
+        },
+        "Due": {
+          "MilliSeconds": 1887539
+        },
+        "Ready": false,
+        "Delivered": false
+      }
+    ],
+    "Height": 1,
+    "FreeHeight": 3
+  },
+  "Buffers": [
+    {
+      "Id": 1,
+      "MaxHeight": 8,
+      "BottomToTop": [
+        {
+          "Id": 36,
+          "Release": {
+            "MilliSeconds": -1429071
+          },
+          "Due": {
+            "MilliSeconds": 1038892
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 35,
+          "Release": {
+            "MilliSeconds": -1382467
+          },
+          "Due": {
+            "MilliSeconds": 573749
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 12,
+          "Release": {
+            "MilliSeconds": -491410
+          },
+          "Due": {
+            "MilliSeconds": 968757
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 8,
+          "Release": {
+            "MilliSeconds": -361574
+          },
+          "Due": {
+            "MilliSeconds": 1270954
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 5,
+          "Release": {
+            "MilliSeconds": -241200
+          },
+          "Due": {
+            "MilliSeconds": 1703474
+          },
+          "Ready": false,
+          "Delivered": false
+        }
+      ],
+      "Height": 5,
+      "FreeHeight": 3
+    },
+    {
+      "Id": 2,
+      "MaxHeight": 8,
+      "BottomToTop": [
+        {
+          "Id": 30,
+          "Release": {
+            "MilliSeconds": -1196147
+          },
+          "Due": {
+            "MilliSeconds": 689596
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 28,
+          "Release": {
+            "MilliSeconds": -1130856
+          },
+          "Due": {
+            "MilliSeconds": 575011
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 18,
+          "Release": {
+            "MilliSeconds": -757727
+          },
+          "Due": {
+            "MilliSeconds": 865781
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 17,
+          "Release": {
+            "MilliSeconds": -703003
+          },
+          "Due": {
+            "MilliSeconds": 1221152
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 14,
+          "Release": {
+            "MilliSeconds": -567590
+          },
+          "Due": {
+            "MilliSeconds": 1215334
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 9,
+          "Release": {
+            "MilliSeconds": -395709
+          },
+          "Due": {
+            "MilliSeconds": 1649191
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 2,
+          "Release": {
+            "MilliSeconds": -86251
+          },
+          "Due": {
+            "MilliSeconds": 1553651
+          },
+          "Ready": false,
+          "Delivered": false
+        }
+      ],
+      "Height": 7,
+      "FreeHeight": 1
+    },
+    {
+      "Id": 3,
+      "MaxHeight": 8,
+      "BottomToTop": [
+        {
+          "Id": 23,
+          "Release": {
+            "MilliSeconds": -927106
+          },
+          "Due": {
+            "MilliSeconds": 1251778
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 16,
+          "Release": {
+            "MilliSeconds": -654649
+          },
+          "Due": {
+            "MilliSeconds": 1286885
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 1,
+          "Release": {
+            "MilliSeconds": -36833
+          },
+          "Due": {
+            "MilliSeconds": 1819564
+          },
+          "Ready": false,
+          "Delivered": false
+        }
+      ],
+      "Height": 3,
+      "FreeHeight": 5
+    },
+    {
+      "Id": 4,
+      "MaxHeight": 8,
+      "BottomToTop": [
+        {
+          "Id": 33,
+          "Release": {
+            "MilliSeconds": -1307409
+          },
+          "Due": {
+            "MilliSeconds": 289342
+          },
+          "Ready": true,
+          "Delivered": false
+        },
+        {
+          "Id": 29,
+          "Release": {
+            "MilliSeconds": -1160751
+          },
+          "Due": {
+            "MilliSeconds": 1758107
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 26,
+          "Release": {
+            "MilliSeconds": -1056208
+          },
+          "Due": {
+            "MilliSeconds": 990920
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 25,
+          "Release": {
+            "MilliSeconds": -1020779
+          },
+          "Due": {
+            "MilliSeconds": 370867
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 21,
+          "Release": {
+            "MilliSeconds": -852653
+          },
+          "Due": {
+            "MilliSeconds": 1185417
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 19,
+          "Release": {
+            "MilliSeconds": -787250
+          },
+          "Due": {
+            "MilliSeconds": 1120730
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 11,
+          "Release": {
+            "MilliSeconds": -462990
+          },
+          "Due": {
+            "MilliSeconds": 1132645
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 4,
+          "Release": {
+            "MilliSeconds": -178561
+          },
+          "Due": {
+            "MilliSeconds": 2288838
+          },
+          "Ready": false,
+          "Delivered": false
+        }
+      ],
+      "Height": 8,
+      "FreeHeight": 0
+    },
+    {
+      "Id": 5,
+      "MaxHeight": 8,
+      "BottomToTop": [
+        {
+          "Id": 34,
+          "Release": {
+            "MilliSeconds": -1347677
+          },
+          "Due": {
+            "MilliSeconds": 500712
+          },
+          "Ready": true,
+          "Delivered": false
+        },
+        {
+          "Id": 24,
+          "Release": {
+            "MilliSeconds": -980725
+          },
+          "Due": {
+            "MilliSeconds": 720196
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 20,
+          "Release": {
+            "MilliSeconds": -815035
+          },
+          "Due": {
+            "MilliSeconds": 1009148
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 15,
+          "Release": {
+            "MilliSeconds": -618342
+          },
+          "Due": {
+            "MilliSeconds": 1071939
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 6,
+          "Release": {
+            "MilliSeconds": -275557
+          },
+          "Due": {
+            "MilliSeconds": 1433671
+          },
+          "Ready": false,
+          "Delivered": false
+        }
+      ],
+      "Height": 5,
+      "FreeHeight": 3
+    },
+    {
+      "Id": 6,
+      "MaxHeight": 8,
+      "BottomToTop": [
+        {
+          "Id": 32,
+          "Release": {
+            "MilliSeconds": -1270198
+          },
+          "Due": {
+            "MilliSeconds": 1097090
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 31,
+          "Release": {
+            "MilliSeconds": -1225132
+          },
+          "Due": {
+            "MilliSeconds": 1211196
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 27,
+          "Release": {
+            "MilliSeconds": -1096877
+          },
+          "Due": {
+            "MilliSeconds": 600047
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 22,
+          "Release": {
+            "MilliSeconds": -885473
+          },
+          "Due": {
+            "MilliSeconds": 968703
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 13,
+          "Release": {
+            "MilliSeconds": -527684
+          },
+          "Due": {
+            "MilliSeconds": 1187482
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 10,
+          "Release": {
+            "MilliSeconds": -417288
+          },
+          "Due": {
+            "MilliSeconds": 1274605
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 7,
+          "Release": {
+            "MilliSeconds": -321340
+          },
+          "Due": {
+            "MilliSeconds": 2150239
+          },
+          "Ready": false,
+          "Delivered": false
+        },
+        {
+          "Id": 3,
+          "Release": {
+            "MilliSeconds": -130738
+          },
+          "Due": {
+            "MilliSeconds": 1773574
+          },
+          "Ready": false,
+          "Delivered": false
+        }
+      ],
+      "Height": 8,
+      "FreeHeight": 0
+    }
+  ],
+  "Handover": {
+    "Id": 7,
+    "Ready": true,
+    "Block": null,
+    "Height": 0,
+    "FreeHeight": 1
+  },
+  "Crane": {
+    "Id": 0,
+    "LocationId": 0,
+    "Load": null,
+    "Schedule": {
+      "Moves": [],
+      "SequenceNr": 0
+    },
+    "GirderPosition": 0,
+    "HoistPosition": 1
+  },
+  "KPIs": {
+    "CraneManipulations": 0,
+    "ServiceLevelMean": 0,
+    "LeadTimeMean": 0,
+    "DeliveredBlocks": 0,
+    "TotalBlocksOnTime": 0,
+    "BlockedArrivalTime": 0,
+    "TardinessMean": 0,
+    "BufferUtilizationMean": 0.75,
+    "CraneUtilizationMean": 0,
+    "HandoverUtilizationMean": 0,
+    "UpstreamUtilizationMean": 0,
+    "ObjectiveValues": [
+      0,
+      0,
+      0
+    ]
+  },
+  "ObservationData": {
+    "ArrivalIntervals": [],
+    "CraneMoveTimes": [],
+    "HandoverReadyIntervals": []
+  },
+  "InvalidMoves": [],
+  "PolicyTime": 0
+}
