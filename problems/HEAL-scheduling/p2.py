@@ -6,7 +6,7 @@ from typing import List
 import numpy as np
 import roar_net_api.algorithms as alg
 import time
-
+from sortedcontainers import SortedSet
 
 class StackingState:
 
@@ -25,6 +25,7 @@ class StackingState:
         self.problem = problem
         self.block_lookup = {block:(stack_index, height) for stack_index, stack in enumerate(stacks) for height, block in enumerate(stack) }  # quick lookup for blocks in stacks
         self.move_durations = {b: self.calc_remove_dur(b) for s in stacks for b in s}
+        self.sorted_dues = SortedSet(enumerate(problem.due_dates), key=lambda x: x[1])
         
 
     def calc_remove_dur(self, b):
@@ -63,6 +64,7 @@ class StackingState:
             self.overdue_sqr += weigh_if_positive(ot)
             self.block_lookup.pop(block)
             self.move_durations.pop(block)
+            self.sorted_dues.remove((block, self.problem.due_dates[block]))
 
     def determine_time(self, from_stack, to_stack):
         dur = self.__move_time(from_stack, to_stack)
@@ -102,7 +104,7 @@ class StackingState:
         vertical_distance = (self.problem.crane_height - from_height) + (self.problem.crane_height - to_height)
         return (horizontal_distance / self.problem.horizontal_speed) + (vertical_distance / self.problem.vertical_speed)
     
-    def __copy__(self):
+    def copy(self):
         """
         Creates a deep copy of the current StackingState.
 
@@ -118,7 +120,7 @@ class StackingState:
 
 
 def weigh_if_positive(x):
-    return x if x>0 else 0
+    return x if x > 0 else 0
 
 #SupportsCopySolution, SupportsObjectiveValue, SupportsLowerBound 
 class Solution:
@@ -141,6 +143,7 @@ class Solution:
         self.state = state
         self.problem = problem
         self.relocations = relocations if relocations else []
+        self.lower_bound_cache = None
 
     def is_feasible(self):
         return self.state.is_empty()
@@ -149,27 +152,25 @@ class Solution:
             return None
         return self.lower_bound()
     def lower_bound(self):
-        #lingering = sum(sum(square_if_positive(self.state.current_time-self.problem.due_dates[b]) for b in s) for s in self.state.stacks)
+        '''Compute a lower bound on the objective value by assuming each block takes the lowest possible time to be relocated.'''
+        if self.lower_bound_cache is not None:
+            return self.lower_bound_cache
         time = self.state.current_time
         forward = 0
         minmove = min(self.state.move_durations.values()) if len(self.state.move_durations)>0 else 0
-        for block,due in sorted(enumerate(self.problem.due_dates), key=lambda x: x[1]):
-            if block not in self.state.block_lookup:
-                continue
-            stack_index, height = self.state.block_lookup[block]
-            #relocation_duration = self.state.get_relocation_duration(stack_index , self.problem.handover_stack, height, 0)
-            relocation_duration= minmove
-            if relocation_duration< self.problem.handover_time:
-                relocation_duration = self.problem.handover_time
+        handover_time = self.problem.handover_time
+        for _, due in self.state.sorted_dues:
+            relocation_duration= max(minmove, handover_time)
             time += relocation_duration
-            if time > self.problem.due_dates[block]:
-                forward += weigh_if_positive(time - self.problem.due_dates[block])
-        
-        return self.state.overdue_sqr + forward # at least one move per block remaining
+            forward += weigh_if_positive(time - due)
+        self.lower_bound_cache = self.state.overdue_sqr + forward # at least one move per block remaining
+        return self.lower_bound_cache
     def __repr__(self):
         return f"Solution(feasible={self.is_feasible()}, objval={self.objective_value()}, lb={self.lower_bound()}, moves={len(self.relocations)},state={self.state})"    
     def copy_solution(self):
-        return Solution(self.state.__copy__(), self.problem, self.relocations.copy())
+        copy_solution = Solution(self.state.copy(), self.problem, self.relocations.copy())
+        copy_solution.lower_bound_cache = self.lower_bound_cache
+        return copy_solution
 
 
 # SupportsConstructionNeighbourhood[DeliverBlockNeighbourhood],
@@ -268,26 +269,18 @@ class AddRelocationMove:
     def apply_move(self, solution: Solution) -> Solution:
         solution.state.apply_relocation(self.from_stack, self.to_stack)
         solution.relocations.append((self.from_stack, self.to_stack))
+        solution.lower_bound_cache = None
         return solution
     
     
     def objective_value_increment(self, solution: Solution) -> float:
         return self.lower_bound_increment(solution)
-        if self.to_stack!= self.neihghbourhood.problem.handover_stack:
-            # Moving to a normal stack does not change the objective value
-            return 0.0
-        state = solution.state
-        problem = self.neihghbourhood.problem
-        new_curr = state.determine_time(self.from_stack, self.to_stack, problem)
-        block = state.stacks[self.from_stack][-1]  # The block being moved
-        ot = new_curr - problem.due_dates[block]
-        return weigh_if_positive(ot)
 
     def lower_bound_increment(self, solution: Solution) -> float:
-        state = solution.state
-        problem = self.neihghbourhood.problem
-        if self.to_stack!= problem.handover_stack:
-        return forward2-forward
+        #todo this is not a valid incremental update, but a full recomputation
+        nextstate = solution.copy_solution()
+        self.apply_move(nextstate)
+        return nextstate.lower_bound()-solution.lower_bound()
 
 
 
